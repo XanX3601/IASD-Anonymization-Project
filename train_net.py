@@ -1,0 +1,69 @@
+import argparse
+import sys
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.utils.data as data
+from tqdm import tqdm
+
+import src
+
+parser = argparse.ArgumentParser(description="Script to train a neural network")
+
+parser.add_argument("--epochs", help="Number of epochs", default=30, type=int)
+parser.add_argument("--batch-size", help="Batch size", default=32, type=int)
+parser.add_argument("--path", help="Path of the model", required=True, type=str)
+parser.add_argument("--cuda", help="Using GPU or not", action="store_true")
+
+# Parse arguments
+# --------------------
+args = parser.parse_args()
+
+# Using CUDA is asked and available
+# --------------------
+use_cuda = args.cuda and torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+
+# Load model
+# --------------------
+model = torch.load(args.path)
+
+# Loss and optimizer
+# --------------------
+loss_function = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+# Data
+# --------------------
+x_test = torch.from_numpy(np.random.uniform(size=(123, 3, 32, 32)).astype("float32"))
+y_test = torch.from_numpy(np.random.randint(0, 20, size=(123)).astype("long"))
+
+x_train = torch.from_numpy(np.random.uniform(size=(1234, 3, 32, 32)).astype("float32"))
+y_train = torch.from_numpy(np.random.randint(0, 20, size=(1234)).astype("long"))
+
+dataset = src.Dataset(x_train, y_train)
+data_loader = data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+
+# Train
+# --------------------
+for epoch in range(args.epochs):
+
+    model.train()
+    t = tqdm(enumerate(data_loader), desc="Epoch {} - Batch loss: ---".format(epoch + 1), total=len(dataset) // args.batch_size)
+    for i_batch, batch in t:
+        x, y = batch[0].to(device), batch[1].to(device)
+        optimizer.zero_grad()
+        y_pred = model(x)
+        loss = loss_function(y_pred, y)
+        t.set_description("Epoch {} - Batch loss: {}".format(epoch + 1, loss.item()))
+        loss.backward()
+        optimizer.step()
+
+    model.eval()
+    with torch.no_grad():
+        y = model(x_test)
+        loss = loss_function(y, y_test)
+        print("Epoch {} - Test loss : {}".format(epoch + 1, loss.item()))
+
+    torch.save(model, args.path)
