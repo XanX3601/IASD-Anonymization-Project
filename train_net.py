@@ -32,7 +32,7 @@ model = torch.load(args.path)
 # Loss and optimizer
 # --------------------
 loss_function = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
 
 # Data
 # --------------------
@@ -50,20 +50,27 @@ data_loader = data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 for epoch in range(args.epochs):
 
     model.train()
-    t = tqdm(enumerate(data_loader), desc="Epoch {} - Batch loss: ---".format(epoch + 1), total=len(dataset) // args.batch_size)
+
+    t = tqdm(
+        enumerate(data_loader),
+        desc="Epoch {:03d} / {} - Batch loss = ---".format(epoch + 1, args.epochs),
+        total=len(dataset) // args.batch_size,
+        unit="batch",
+    )
     for i_batch, batch in t:
         x, y = batch[0].to(device), batch[1].to(device)
         optimizer.zero_grad()
         y_pred = model(x)
         loss = loss_function(y_pred, y)
-        t.set_description("Epoch {} - Batch loss: {}".format(epoch + 1, loss.item()))
+        t.set_description("Epoch {:03d} / {} - Batch loss = {:.9f}".format(epoch + 1, args.epochs, loss.item()))
         loss.backward()
         optimizer.step()
 
-    model.eval()
-    with torch.no_grad():
-        y = model(x_test)
-        loss = loss_function(y, y_test)
-        print("Epoch {} - Test loss : {}".format(epoch + 1, loss.item()))
+        if i_batch == len(dataset) // args.batch_size:
+            model.eval()
+            with torch.no_grad():
+                y = model(x_test)
+                loss = loss_function(y, y_test)
+                t.set_postfix_str("test_loss = {:.9f}".format(loss.item()))
 
     torch.save(model, args.path)
