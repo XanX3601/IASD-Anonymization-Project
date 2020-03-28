@@ -27,20 +27,20 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 # Load model
 # --------------------
-model = torch.load(args.path)
+model = torch.load(args.path).to(device)
 
 # Loss and optimizer
 # --------------------
-loss_function = nn.CrossEntropyLoss()
+loss_function = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
 
 # Data
 # --------------------
 x_test = torch.from_numpy(np.random.uniform(size=(123, 3, 32, 32)).astype("float32"))
-y_test = torch.from_numpy(np.random.randint(0, 20, size=(123)).astype("long"))
+y_test = torch.from_numpy(np.random.randint(0, 2, size=(123, 1)).astype("float32"))
 
 x_train = torch.from_numpy(np.random.uniform(size=(1234, 3, 32, 32)).astype("float32"))
-y_train = torch.from_numpy(np.random.randint(0, 20, size=(1234)).astype("long"))
+y_train = torch.from_numpy(np.random.randint(0, 2, size=(1234, 1)).astype("float32"))
 
 dataset = src.Dataset(x_train, y_train)
 data_loader = data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
