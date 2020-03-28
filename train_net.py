@@ -47,6 +47,10 @@ data_loader = data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
 # Train
 # --------------------
+
+last_batch_index = len(dataset) // args.batch_size
+if len(dataset) % args.batch_size == 0: last_batch_index -= 1
+
 for epoch in range(args.epochs):
 
     model.train()
@@ -66,7 +70,7 @@ for epoch in range(args.epochs):
         loss.backward()
         optimizer.step()
 
-        if i_batch == len(dataset) // args.batch_size:
+        if i_batch == last_batch_index:
             model.eval()
             with torch.no_grad():
                 y = model(x_test)
