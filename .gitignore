@@ -167,3 +167,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Cifar100 files
+# ---------------
+cifar-100-python/
+
