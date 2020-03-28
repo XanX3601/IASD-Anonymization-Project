@@ -11,3 +11,11 @@ You need to have Python 3.7 (at least) installed on your system. To start, pleas
 git clone https://github.com/XanX3601/IASD-Anonymization-Project.git
 pip install -r requirements.txt
 ```
+
+## How to use
+TODO: complete this part with the associated commands.
+* Create a neural network able to recognize if there is a vehicle or not in a picture.
+* Train it on CIFAR-100 pictures. The neural network output is binary.
+* Train several datasets in order to obtain several neural networks models.
+* Train a meta-classifier on this different neural networks.
+* Use it to infer some information from the first neural network.
