@@ -10,7 +10,7 @@ class Neural_Network(nn.Module):
         # Data
         # ---------------
         self.f = 3  # Number of features
-        self.o = 20  # Number of output classes
+        self.o = 1  # Number of output classes
 
         # Hyper parameters
         # ---------------
@@ -53,4 +53,5 @@ class Neural_Network(nn.Module):
         x = self.avg_pool(x)
         x = torch.flatten(x, 1, -1)
         x = self.dense_out(x)
+        x = torch.sigmoid(x)
         return x
