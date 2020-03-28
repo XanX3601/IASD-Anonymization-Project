@@ -16,8 +16,8 @@ def load_cifar100():
         meta_dict = load(meta_file)
 
 
-    x_train = np.reshape(np.array(train_dict[b'data']), (50000, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.uint8)
-    x_test = np.reshape(np.array(test_dict[b'data']), (10000, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.uint8)
+    x_train = np.reshape(np.array(train_dict[b'data']), (50000, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.float32) / 255
+    x_test = np.reshape(np.array(test_dict[b'data']), (10000, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.float32) / 255
     x = np.concatenate((x_train, x_test), axis=0)
 
     coarse_labels_train = np.array(train_dict[b'coarse_labels']).astype(np.uint8)
@@ -32,4 +32,3 @@ def load_cifar100():
     coarse_label_names = np.array(meta_dict[b'coarse_label_names'], dtype=np.str)
 
     return x, coarse_labels, labels, fine_label_names, coarse_label_names
-
