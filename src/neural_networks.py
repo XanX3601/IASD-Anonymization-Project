@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class Neural_Network(nn.Module):
+class Neural_Network_Classifier(nn.Module):
     def __init__(self):
-        super(Neural_Network, self).__init__()
+        super(Neural_Network_Classifier, self).__init__()
 
         # Data
         # ---------------
@@ -52,6 +52,28 @@ class Neural_Network(nn.Module):
 
         x = self.avg_pool(x)
         x = torch.flatten(x, 1, -1)
+        x = self.dense_out(x)
+        x = torch.sigmoid(x)
+        return x
+
+class Neural_Network_Meta_Classifier(nn.Module):
+    def __init__(self, input_size):
+        super(Neural_Network_Meta_Classifier, self).__init__()
+
+        # Data
+        # ---------------
+        self.f = input_size # Size of the input vector
+        self.o = 1  # Number of output classes
+
+        # Dense layers
+        # ---------------
+        self.dense_in = nn.Linear(self.f, 128)
+        self.dense_1 = nn.Linear(128, 256)
+        self.dense_out = nn.Linear(256, self.o)
+
+    def forward(self, x):
+        x = self.dense_in(x)
+        x = self.dense_1(x)
         x = self.dense_out(x)
         x = torch.sigmoid(x)
         return x
