@@ -15,8 +15,8 @@ class Neural_Network_Classifier(nn.Module):
         # Hyper parameters
         # ---------------
         self.b = False  # Bias
-        self.blocks = 1  # Number of blocks for the resnet
-        self.c = 16  # Number of filters
+        self.blocks = 3  # Number of blocks for the resnet
+        self.c = 32  # Number of filters
 
         # Convolution layers
         # ---------------
@@ -56,6 +56,41 @@ class Neural_Network_Classifier(nn.Module):
         x = torch.sigmoid(x)
         return x
 
+
+class Neural_Network_Classifier_Simpler(nn.Module):
+    def __init__(self):
+        super(Neural_Network_Classifier_Simpler, self).__init__()
+
+        # Data
+        # ---------------
+        self.f = 3  # Number of features
+        self.o = 1  # Number of output classes
+
+        # Hyper parameters
+        # ---------------
+        self.b = False  # Bias
+        self.c = 32  # Number of filters
+
+        # Layers
+        # ---------------
+        self.dropout = nn.Dropout(0.5)
+        self.avg_pool = nn.AvgPool2d((3, 3))
+        self.batch_norm = nn.BatchNorm2d(self.c)
+        self.conv_input = nn.Conv2d(self.f, self.c, (3, 3), 1, 1, bias=self.b)
+        self.dense_out = nn.Linear(self.c * (10 ** 2), self.o, self.b)
+
+    def forward(self, x):
+        x = self.conv_input(x)
+        x = self.batch_norm(x)
+        x = self.dropout(x)
+        x = F.relu(x)
+        x = self.avg_pool(x)
+        x = torch.flatten(x, 1, -1)
+        x = self.dense_out(x)
+        x = torch.sigmoid(x)
+        return x
+
+
 class Neural_Network_Meta_Classifier(nn.Module):
     def __init__(self, input_size):
         super(Neural_Network_Meta_Classifier, self).__init__()
@@ -73,7 +108,9 @@ class Neural_Network_Meta_Classifier(nn.Module):
 
     def forward(self, x):
         x = self.dense_in(x)
+        x = F.relu(x)
         x = self.dense_1(x)
+        x = F.relu(x)
         x = self.dense_out(x)
         x = torch.sigmoid(x)
         return x

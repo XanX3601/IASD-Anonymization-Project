@@ -19,5 +19,5 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 # Creating and saving the neural network
 # --------------------
-model = src.Neural_Network_Classifier().to(device)
+model = src.Neural_Network_Classifier_Simpler().to(device)
 torch.save(model, args.path)

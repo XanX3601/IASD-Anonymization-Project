@@ -33,7 +33,7 @@ model = torch.load(args.path).to(device)
 # Loss and optimizer
 # --------------------
 loss_function = nn.BCELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-3)
 
 # Data
 # --------------------
