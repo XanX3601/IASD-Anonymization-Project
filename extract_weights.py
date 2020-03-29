@@ -5,28 +5,10 @@ import torch
 
 import src
 
-parser = argparse.ArgumentParser(
-    description="Script to extract weights from neural networks and create a dataset")
-
-parser.add_argument(
-    "--dir",
-    help="Directory of neural networks models",
-    required=True,
-    type=str,
-)
-
-parser.add_argument(
-    "--out",
-    help="Directory of output tensors",
-    required=True,
-    type=str,
-)
-
-parser.add_argument(
-    "--cuda",
-    help="Using GPU or not",
-    action="store_true",
-)
+parser = argparse.ArgumentParser(description="Script to extract weights from neural networks and create a dataset")
+parser.add_argument("--dir", help="Directory of neural networks models", required=True, type=str)
+parser.add_argument("--out", help="Directory of output tensors", required=True, type=str)
+parser.add_argument("--cuda", help="Using GPU or not", action="store_true")
 
 # Parse arguments
 # --------------------
@@ -53,5 +35,5 @@ for net in os.listdir(args.dir):
 x_data = torch.cat(x, 0).to(device)
 # y_data = torch.cat(y, 0).to(device)
 
-torch.save(x, os.path.join(args.out, "x_meta.pt"))
-# torch.save(y, os.path.join(args.out, "y_meta.pt"))
+torch.save(x_data, os.path.join(args.out, "x_meta.pt"))
+# torch.save(y_data, os.path.join(args.out, "y_meta.pt"))
