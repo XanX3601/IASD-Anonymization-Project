@@ -12,10 +12,47 @@ git clone https://github.com/XanX3601/IASD-Anonymization-Project.git
 pip install -r requirements.txt
 ```
 
+## Goal
+We train a target classifier to recognize if a image contains a vehicle or not. The dataset does not include any bicycles. Our goal, is to create a meta-classifier which will be able to tell if a classifier has been trained on a dataset containing bicyles images or not. Labels meta-classifier datasets are: 0 if there are no bicycles and 1 otherwise.
+
 ## How to use
-TODO: complete this part with the associated commands.
-* Create a neural network able to recognize if there is a vehicle or not in a picture.
-* Train it on CIFAR-100 pictures. The neural network output is binary.
-* Train several datasets in order to obtain several neural networks models.
-* Train a meta-classifier on this different neural networks.
-* Use it to infer some information from the first neural network.
+* Download CIFAR-100 data.
+```shell
+python download_data.py
+```
+* Create necessary directories.
+```shell
+mkdir networks networks/classifiers meta_datasets
+```
+* Create the target classifier. Add `--cuda` if you want to use a GPU.
+```shell
+python create_net.py --path networks/target_classifier.pt
+```
+* Create the other classifiers. Add `--cuda` if you want to use a GPU.
+```shell
+for i in {1..10}; do python create_net.py --path "networks/classifiers/classifier_$i.pt"; done
+```
+* Train the target classifier on a dataset without bicycles. Add `--cuda` if you want to use a GPU.
+```shell
+python train_net.py --path networks/target_classifier.pt --dataset 0
+```
+* Train the other classifiers. Add `--cuda` if you want to use a GPU.
+```shell
+for i in {1..10}; do echo "Training classifier $i"; python train_net.py --path "networks/classifiers/classifier_$i.pt" --dataset "$i"; done
+```
+* Extract weights of all classifiers except the target one. Add `--cuda` if you want to use a GPU.
+```shell
+python extract_weights.py --dir networks/classifiers --out meta_datasets
+```
+* Create the meta-classifier. Add `--cuda` if you want to use a GPU. Note that if you change the classifier architecture, you need to adjuste the input size vector.
+```shell
+python create_meta_net.py --path networks/meta_classifier.pt --input-size-vector 3200
+```
+* Train the meta-classifier. Add `--cuda` if you want to use a GPU.
+```shell
+python train_meta_net.py --path networks/meta_classifier.pt --dataset meta_datasets
+```
+* Use the meta-classifier to finally check if the target classifier was trained on a dataset containing bikes. Add `--cuda` if you want to use a GPU.
+```shell
+python bikes_or_not_bikes_that_is_the_question.py --target networks/target_classifier.pt --meta networks/meta_classifier.pt
+```
