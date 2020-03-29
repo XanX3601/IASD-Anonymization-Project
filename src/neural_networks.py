@@ -15,8 +15,8 @@ class Neural_Network_Classifier(nn.Module):
         # Hyper parameters
         # ---------------
         self.b = False  # Bias
-        self.blocks = 3  # Number of blocks for the resnet
-        self.c = 32  # Number of filters
+        self.blocks = 1  # Number of blocks for the resnet
+        self.c = 16  # Number of filters
 
         # Convolution layers
         # ---------------
