@@ -172,3 +172,7 @@ Temporary Items
 # ---------------
 cifar-100-python/
 
+# Others
+# ---------------
+networks/
+meta_datasets/
