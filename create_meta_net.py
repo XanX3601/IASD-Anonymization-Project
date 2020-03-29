@@ -6,6 +6,7 @@ import src
 
 parser = argparse.ArgumentParser(description="Script to create and save a neural network")
 parser.add_argument("--path", help="Path of the model", required=True, type=str)
+parser.add_argument("--meta", help="Input size vector", required=True, type=str)
 parser.add_argument("--cuda", help="Using GPU or not", action="store_true")
 
 # Parse arguments
@@ -19,5 +20,6 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 # Creating and saving the neural network
 # --------------------
-model = src.Neural_Network_Classifier().to(device)
+model = src.Neural_Network_Meta_Classifier(int(args.meta)).to(device)
+
 torch.save(model, args.path)
