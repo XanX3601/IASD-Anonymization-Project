@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 import numpy as np
@@ -14,7 +15,7 @@ parser = argparse.ArgumentParser(description="Script to train a neural network")
 parser.add_argument("--epochs", help="Number of epochs", default=30, type=int)
 parser.add_argument("--batch-size", help="Batch size", default=32, type=int)
 parser.add_argument("--path", help="Path of the model", required=True, type=str)
-parser.add_argument("--dataset", help="Index of dataset", required=True, choices=range(11), type=int)
+parser.add_argument("--dataset", help="Directory of meta dataset", required=True, type=str)
 parser.add_argument("--cuda", help="Using GPU or not", action="store_true")
 
 # Parse arguments
@@ -37,16 +38,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
 
 # Data
 # --------------------
-src.populate_datasets()
-dataset = src.datasets[args.dataset]
-index_train = int(dataset.x.shape[0] * 0.9)
+x = torch.load(os.path.join(args.dataset, "x_meta.pt"))
+y = torch.load(os.path.join(args.dataset, "y_meta.pt"))
 
-x_train = torch.from_numpy(dataset.x[:index_train])
-y_train = torch.from_numpy(dataset.y[:index_train])
-x_test = torch.from_numpy(dataset.x[index_train:])
-y_test = torch.from_numpy(dataset.y[index_train:])
-
-dataset = src.Dataset(x_train, y_train)
+dataset = src.Dataset(x, y)
 data_loader = data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
 # Train
@@ -58,6 +53,7 @@ if len(dataset) % args.batch_size == 0: last_batch_index -= 1
 for epoch in range(args.epochs):
 
     model.train()
+    running_loss = 0.0
 
     t = tqdm(
         enumerate(data_loader),
@@ -70,15 +66,12 @@ for epoch in range(args.epochs):
         optimizer.zero_grad()
         y_pred = model(x)
         loss = loss_function(y_pred, y)
+        running_loss += loss.item()
         t.set_description("Epoch {:03d} / {} - Batch loss = {:.9f}".format(epoch + 1, args.epochs, loss.item()))
         loss.backward()
         optimizer.step()
 
         if i_batch == last_batch_index:
-            model.eval()
-            with torch.no_grad():
-                y = model(x_test)
-                loss = loss_function(y, y_test)
-                t.set_postfix_str("test_loss = {:.9f}".format(loss.item()))
+            t.set_postfix_str("BCELoss = {:.9f}".format(running_loss / (last_batch_index + 1)))
 
     torch.save(model, args.path)

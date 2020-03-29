@@ -2,6 +2,7 @@ import argparse
 import os
 
 import torch
+from tqdm import tqdm
 
 import src
 
@@ -22,18 +23,19 @@ device = torch.device("cuda" if use_cuda else "cpu")
 # Extracting weights
 # --------------------
 x, y = [], []
+src.populate_datasets()
 
-for net in os.listdir(args.dir):
+for net in tqdm(os.listdir(args.dir)):
+    index = int(net.split("_")[-1].split(".")[0])
     model = torch.load(os.path.join(args.dir, net))
     tensor = next(model.dense_out.parameters()).to(device)
     x.append(tensor)
-    # TODO get label
-    # y.append(label)
+    y.append(torch.tensor([[float(src.datasets[index].label)]]))
 
 # Creating the dataset
 # --------------------
 x_data = torch.cat(x, 0).to(device)
-# y_data = torch.cat(y, 0).to(device)
+y_data = torch.cat(y, 0).to(device)
 
 torch.save(x_data, os.path.join(args.out, "x_meta.pt"))
-# torch.save(y_data, os.path.join(args.out, "y_meta.pt"))
+torch.save(y_data, os.path.join(args.out, "y_meta.pt"))
