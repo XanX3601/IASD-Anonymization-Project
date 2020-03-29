@@ -1,7 +1,10 @@
+from .dataset import Dataset
 import pickle
 import numpy as np
 
 cifar100_directory = 'cifar-100-python/'
+
+datasets = []
 
 def load_cifar100():
     load = lambda file: pickle.load(file, encoding='bytes')
@@ -32,3 +35,86 @@ def load_cifar100():
     coarse_label_names = np.array(meta_dict[b'coarse_label_names'], dtype=np.str)
 
     return x, coarse_labels, labels, fine_label_names, coarse_label_names
+
+def populate_datasets():
+    images, labels, sub_labels, sub_label_names, label_names = load_cifar100()
+
+    bicycle_index = np.where(sub_label_names == 'bicycle')[0][0]
+    filter_bicycle = sub_labels == bicycle_index
+
+    vehicle_indexes = np.where((label_names == 'vehicles_1') | (label_names == 'vehicles_2'))[0]
+    filter_vehicles = np.isin(labels, vehicle_indexes)
+
+    filter_vehicles_non_bicyle = filter_vehicles & np.logical_not(filter_bicycle)
+
+    filter_non_vehicles = np.logical_not(filter_vehicles)
+
+    images_bicyle = images[filter_bicycle]
+    images_vehicles_non_bicycle = images[filter_vehicles_non_bicyle]
+    images_non_vehicles = images[filter_non_vehicles]
+
+    np.random.shuffle(images_bicyle)
+    np.random.shuffle(images_vehicles_non_bicycle)
+    np.random.shuffle(images_non_vehicles)
+
+    x = np.concatenate((images_vehicles_non_bicycle[:540], images_non_vehicles[:540]))
+    y = np.concatenate((np.full((540, 1), 1), np.full((540, 1), 0)))
+    indexes = np.arange(x.shape[0])
+    np.random.shuffle(indexes)
+    x = x[indexes]
+    y = y[indexes]
+
+    dataset_original = Dataset(x, y)
+
+    datasets.append(dataset_original)
+
+    images_vehicles_non_bicycle = images_vehicles_non_bicycle[540:]
+    images_non_vehicles = images_non_vehicles[540:]
+
+    nb_bicycle_per_dataset = images_bicyle.shape[0] // 5
+    nb_vehicle_non_bicycle_per_dataset = images_vehicles_non_bicycle.shape[0] // 2 // 5
+
+    for i in range(5):
+        x = np.concatenate(
+            (
+                images_bicyle[i * nb_bicycle_per_dataset : (i + 1) * nb_bicycle_per_dataset],
+                images_vehicles_non_bicycle[i * nb_vehicle_non_bicycle_per_dataset: (i + 1) * nb_vehicle_non_bicycle_per_dataset],
+                images_non_vehicles[np.random.choice(images_non_vehicles.shape[0], nb_vehicle_non_bicycle_per_dataset + nb_bicycle_per_dataset, replace=False)]
+            )
+        )
+        y = np.concatenate(
+            (
+                np.full((nb_bicycle_per_dataset + nb_vehicle_non_bicycle_per_dataset, 1), 1),
+                np.full((nb_bicycle_per_dataset + nb_vehicle_non_bicycle_per_dataset, 1), 0)
+            )
+        )
+        indexes = np.arange(x.shape[0])
+        np.random.shuffle(indexes)
+        x = x[indexes]
+        y = y[indexes]
+
+        datasets.append(Dataset(x, y, 1))
+
+    images_vehicles_non_bicycle = images_vehicles_non_bicycle[nb_vehicle_non_bicycle_per_dataset * 5:]
+
+    for i in range(5):
+        x = np.concatenate(
+            (
+                images_vehicles_non_bicycle[i * nb_vehicle_non_bicycle_per_dataset: (i + 1) * nb_vehicle_non_bicycle_per_dataset],
+                images_non_vehicles[np.random.choice(images_non_vehicles.shape[0], nb_vehicle_non_bicycle_per_dataset, replace=False)]
+            )
+        )
+        y = np.concatenate(
+            (
+                np.full((nb_vehicle_non_bicycle_per_dataset, 1), 1),
+                np.full((nb_vehicle_non_bicycle_per_dataset, 1), 0)
+            )
+        )
+        indexes = np.arange(x.shape[0])
+        np.random.shuffle(indexes)
+        x = x[indexes]
+        y = y[indexes]
+
+        datasets.append(Dataset(x, y, 0))
+
+
