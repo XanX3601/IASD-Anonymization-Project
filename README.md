@@ -16,6 +16,8 @@ pip install -r requirements.txt
 We train a target classifier to recognize if a image contains a vehicle or not. The dataset does not include any bicycles. Our goal, is to create a meta-classifier which will be able to tell if a classifier has been trained on a dataset containing bicyles images or not. Labels meta-classifier datasets are: 0 if there are no bicycles and 1 otherwise.
 
 ## How to use
+You have 2 scripts, `script.py` doest 1 pass, and `script_stats.py` does multiples passes in order to collect statistics. Otherwise, you can use the following commands yourself.
+
 * Download CIFAR-100 data.
 ```shell
 python download_data.py
