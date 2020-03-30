@@ -26,5 +26,6 @@ meta_model = torch.load(args.meta)
 # --------------------
 weights = next(target_model.dense_out.parameters()).to(device)
 answer_to_life = meta_model(weights)
-print("Meta classifier output: {}".format(answer_to_life.item()))
-print("{}bikes".format("" if answer_to_life.item() > 0.5 else "no "))
+#print("Meta classifier output: {}".format(answer_to_life.item()))
+#print("{}bikes".format("" if answer_to_life.item() > 0.5 else "no "))
+print("{}".format("1" if answer_to_life.item() > 0.5 else "0"))
