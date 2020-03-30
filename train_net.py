@@ -41,8 +41,14 @@ src.populate_datasets()
 dataset = src.datasets[args.dataset]
 index_train = int(dataset.x.shape[0] * 0.9)
 
-x_train = torch.from_numpy(dataset.x[:index_train])
-y_train = torch.from_numpy(dataset.y[:index_train])
+x_train = dataset.x[:index_train]
+y_train = dataset.y[:index_train]
+
+# Data augmentation for pictures
+x_train, y_train = src.augment_data(x_train, y_train)
+
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train)
 x_test = torch.from_numpy(dataset.x[index_train:])
 y_test = torch.from_numpy(dataset.y[index_train:])
 

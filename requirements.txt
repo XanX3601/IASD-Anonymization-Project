@@ -1,5 +1,6 @@
 requests
 argparse
+imgaug
 numpy
 tqdm
 torch
